@@ -11,7 +11,7 @@
         <label for="option">Wybierz moduł:</label>
         <select name="option" id="option">
             <optgroup label="Moduł CRM">
-                <option value="1">Dodaj nowego klienta</option>
+                <option value="1" selected>Dodaj nowego klienta</option>
                 <option value="2">Wyświetl wszystkich klientów</option>
                 <option value="3">Aktualizuj dane klienta</option>
                 <option value="4">Usuń klienta</option>
@@ -33,24 +33,24 @@
                 <option value="16">Liczba pracowników na oddział</option>
             </optgroup>
         </select>
-        <button type="submit">Wykonaj</button>
+        <button type="submit" id="executeButton">Wykonaj</button>
     </form>
 
     <!-- Dodatkowy formularz dla opcji 1 (Dodaj nowego klienta) w module CRM -->
-<div id="addCustomerForm" style="display: none;">
-    <h2>Dodaj nowego klienta</h2>
-    <form action="controller.php" method="post">
-        <input type="hidden" name="option" value="1">
-        <input type="hidden" name="module" value="crm">
-        <label for="name">Imię:</label>
-        <input type="text" name="name" id="name" required><br>
-        <label for="email">Adres e-mail:</label>
-        <input type="email" name="email" id="email" required><br>
-        <label for="subscription">Status subskrypcji:</label>
-        <input type="text" name="subscription" id="subscription" required><br>
-        <button type="submit">Dodaj klienta</button>
-    </form>
-</div>
+    <div id="addCustomerForm">
+        <h2>Dodaj nowego klienta</h2>
+        <form action="controller.php" method="post">
+            <input type="hidden" name="option" value="1">
+            <input type="hidden" name="module" value="crm">
+            <label for="name">Imię:</label>
+            <input type="text" name="name" id="name" required><br>
+            <label for="email">Adres e-mail:</label>
+            <input type="email" name="email" id="email" required><br>
+            <label for="subscription">Status subskrypcji:</label>
+            <input type="text" name="subscription" id="subscription" required><br>
+            <button type="submit">Dodaj klienta</button>
+        </form>
+    </div>
 
     <!-- Dodatkowy formularz dla opcji 3 (Aktualizuj dane klienta) w module CRM -->
     <div id="updateCustomerForm" style="display: none;">
@@ -83,17 +83,35 @@
     </div>
 
     <script>
+        // Funkcja do ukrywania wszystkich formularzy
+        function hideAllForms() {
+            document.getElementById('addCustomerForm').style.display = 'none';
+            document.getElementById('updateCustomerForm').style.display = 'none';
+            document.getElementById('deleteCustomerForm').style.display = 'none';
+        }
+
+        // Domyślne ukrycie formularzy po załadowaniu strony
+        document.addEventListener('DOMContentLoaded', function() {
+            hideAllForms();
+            document.getElementById('addCustomerForm').style.display = 'block';
+            document.getElementById('executeButton').style.display = 'none';
+        });
+
+        // Obsługa zmiany opcji w dropdownie
         document.getElementById('option').addEventListener('change', function() {
+            hideAllForms();
+            document.getElementById('executeButton').style.display = 'block'; // Pokazujemy guzik "Wykonaj" po zmianie opcji
+
+            // Pokazywanie odpowiedniego formularza w zależności od wybranej opcji
             if (this.value === '1') {
                 document.getElementById('addCustomerForm').style.display = 'block';
+                document.getElementById('executeButton').style.display = 'none';
             } else if (this.value === '3') {
                 document.getElementById('updateCustomerForm').style.display = 'block';
+                document.getElementById('executeButton').style.display  = 'none';
             } else if (this.value === '4') {
                 document.getElementById('deleteCustomerForm').style.display = 'block';
-            } else {
-                document.getElementById('addCustomerForm').style.display = 'none';
-                document.getElementById('updateCustomerForm').style.display = 'none';
-                document.getElementById('deleteCustomerForm').style.display = 'none';
+                document.getElementById('executeButton').style.display = 'none';
             }
         });
     </script>
