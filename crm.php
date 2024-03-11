@@ -2,13 +2,37 @@
 
 // Funkcja do odczytu danych klientów z pliku
 function readCustomersData() {
-    $customersData = file_get_contents('crm_data.txt');
-    return json_decode($customersData, true) ?: [];
+    $customersData = [];
+    $file = fopen('crm_data.txt', 'r');
+
+    if ($file) {
+        while (($line = fgets($file)) !== false) {
+            $data = explode(',', $line);
+            $customer = [
+                'id' => trim($data[0]),
+                'name' => trim($data[1]),
+                'email' => trim($data[2]),
+                'subscription' => trim($data[3])
+            ];
+            $customersData[] = $customer;
+        }
+        fclose($file);
+    }
+
+    return $customersData;
 }
 
 // Funkcja do zapisu danych klientów do pliku
 function saveCustomersData($customersData) {
-    file_put_contents('crm_data.txt', json_encode($customersData));
+    $file = fopen('crm_data.txt', 'w');
+
+    if ($file) {
+        foreach ($customersData as $customer) {
+            $line = implode(',', $customer) . PHP_EOL;
+            fwrite($file, $line);
+        }
+        fclose($file);
+    }
 }
 
 // Operacja "Create" - Dodanie nowego klienta
@@ -19,12 +43,12 @@ function addCustomer($name, $email, $subscription) {
     $customerId = uniqid();
 
     // Tworzenie nowego klienta
-    $newCustomer = array(
+    $newCustomer = [
         'id' => $customerId,
         'name' => $name,
         'email' => $email,
         'subscription' => $subscription
-    );
+    ];
 
     // Dodawanie nowego klienta do tablicy klientów
     $customersData[] = $newCustomer;
