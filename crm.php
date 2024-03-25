@@ -1,44 +1,54 @@
 <?php
 
-// Funkcja do odczytu danych klientów z pliku
-function readCustomersData() {
-    $customersData = [];
-    $file = fopen('crm_data.txt', 'r');
+// Połączenie z bazą danych
+$host = 'localhost';
+$user = 'root'; // Nazwa użytkownika bazy danych
+$password = ''; // Hasło użytkownika bazy danych
+$database = 'ERP'; // Nazwa bazy danych
 
-    if ($file) {
-        while (($line = fgets($file)) !== false) {
-            $data = explode(',', $line);
-            $customer = [
-                'id' => trim($data[0]),
-                'name' => trim($data[1]),
-                'email' => trim($data[2]),
-                'subscription' => trim($data[3])
-            ];
-            $customersData[] = $customer;
+$connection = mysqli_connect($host, $user, $password, $database);
+
+if (!$connection) {
+    die("Błąd połączenia z bazą danych: " . mysqli_connect_error());
+}
+
+// Funkcja do odczytu danych klientów z bazy danych
+function readCustomersData() {
+    global $connection;
+
+    $customersData = [];
+
+    $query = "SELECT * FROM customers";
+    $result = mysqli_query($connection, $query);
+
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $customersData[] = $row;
         }
-        fclose($file);
     }
 
     return $customersData;
 }
 
-// Funkcja do zapisu danych klientów do pliku
+// Funkcja do zapisu danych klientów do bazy danych
 function saveCustomersData($customersData) {
-    $file = fopen('crm_data.txt', 'w');
+    global $connection;
 
-    if ($file) {
-        foreach ($customersData as $customer) {
-            $line = implode(',', $customer) . PHP_EOL;
-            fwrite($file, $line);
-        }
-        fclose($file);
+    foreach ($customersData as $customer) {
+        $id = mysqli_real_escape_string($connection, $customer['id']);
+        $name = mysqli_real_escape_string($connection, $customer['name']);
+        $email = mysqli_real_escape_string($connection, $customer['email']);
+        $subscription = mysqli_real_escape_string($connection, $customer['subscription']);
+
+        $query = "INSERT INTO customers (id, name, email, subscription) VALUES ('$id', '$name', '$email', '$subscription')";
+        mysqli_query($connection, $query);
     }
 }
 
-// Operacja "Create" - Dodanie nowego klienta
+// Funkcja do dodawania nowego klienta
 function addCustomer($name, $email, $subscription) {
-    $customersData = readCustomersData();
-    
+    global $connection;
+
     // Generowanie losowego identyfikatora klienta
     $customerId = uniqid();
 
@@ -51,6 +61,7 @@ function addCustomer($name, $email, $subscription) {
     ];
 
     // Dodawanie nowego klienta do tablicy klientów
+    $customersData = readCustomersData();
     $customersData[] = $newCustomer;
 
     // Zapisanie danych klientów
@@ -59,50 +70,37 @@ function addCustomer($name, $email, $subscription) {
     return $customerId;
 }
 
-// Operacja "Read" - Wyświetlenie wszystkich klientów
-function getAllCustomers() {
-    return readCustomersData();
-}
-
-// Operacja "Update" - Aktualizacja danych klienta
+// Funkcja do aktualizacji danych klienta
 function updateCustomer($customerId, $name, $email, $subscription) {
-    $customersData = readCustomersData();
+    global $connection;
 
-    // Znalezienie klienta po identyfikatorze
-    foreach ($customersData as &$customer) {
-        if ($customer['id'] === $customerId) {
-            // Aktualizacja danych klienta
-            $customer['name'] = $name;
-            $customer['email'] = $email;
-            $customer['subscription'] = $subscription;
-            break;
-        }
-    }
-
-    // Zapisanie zaktualizowanych danych klientów
-    saveCustomersData($customersData);
+    $query = "UPDATE customers SET name='$name', email='$email', subscription='$subscription' WHERE id='$customerId'";
+    mysqli_query($connection, $query);
 }
 
-// Operacja "Delete" - Usunięcie klienta
+// Funkcja do usuwania klienta
 function deleteCustomer($customerId) {
-    $customersData = readCustomersData();
+    global $connection;
 
-    // Usunięcie klienta z tablicy na podstawie identyfikatora
-    foreach ($customersData as $key => $customer) {
-        if ($customer['id'] === $customerId) {
-            unset($customersData[$key]);
-            break;
+    $query = "DELETE FROM customers WHERE id='$customerId'";
+    mysqli_query($connection, $query);
+}
+
+// Funkcja do pobierania adresów e-mail klientów
+function getEmailAddresses() {
+    global $connection;
+
+    $emailAddresses = [];
+
+    $query = "SELECT email FROM customers";
+    $result = mysqli_query($connection, $query);
+
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $emailAddresses[] = $row['email'];
         }
     }
 
-    // Zapisanie zaktualizowanych danych klientów
-    saveCustomersData($customersData);
-}
-
-// Operacja "Pobierz adresy e-mail klientów"
-function getEmailAddresses() {
-    $customersData = readCustomersData();
-    $emailAddresses = array_column($customersData, 'email');
     return implode(', ', $emailAddresses);
 }
 
