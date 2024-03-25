@@ -1,10 +1,10 @@
 <?php
 
 // Połączenie z bazą danych
-$host = 'localhost';
+$host = 'localhost'; // Host bazy danych
 $user = 'root'; // Nazwa użytkownika bazy danych
-$password = ''; // Hasło użytkownika bazy danych
-$database = 'ERP'; // Nazwa bazy danych
+$password = '123123'; // Hasło użytkownika bazy danych
+$database = 'erp'; // Nazwa bazy danych
 
 $connection = mysqli_connect($host, $user, $password, $database);
 
@@ -18,7 +18,7 @@ function readCustomersData() {
 
     $customersData = [];
 
-    $query = "SELECT * FROM customers";
+    $query = "SELECT * FROM crm";
     $result = mysqli_query($connection, $query);
 
     if ($result) {
@@ -40,7 +40,7 @@ function saveCustomersData($customersData) {
         $email = mysqli_real_escape_string($connection, $customer['email']);
         $subscription = mysqli_real_escape_string($connection, $customer['subscription']);
 
-        $query = "INSERT INTO customers (id, name, email, subscription) VALUES ('$id', '$name', '$email', '$subscription')";
+        $query = "INSERT INTO crm (id, name, email, subscription) VALUES ('$id', '$name', '$email', '$subscription')";
         mysqli_query($connection, $query);
     }
 }
@@ -74,7 +74,7 @@ function addCustomer($name, $email, $subscription) {
 function updateCustomer($customerId, $name, $email, $subscription) {
     global $connection;
 
-    $query = "UPDATE customers SET name='$name', email='$email', subscription='$subscription' WHERE id='$customerId'";
+    $query = "UPDATE crm SET name='$name', email='$email', subscription='$subscription' WHERE id='$customerId'";
     mysqli_query($connection, $query);
 }
 
@@ -82,7 +82,7 @@ function updateCustomer($customerId, $name, $email, $subscription) {
 function deleteCustomer($customerId) {
     global $connection;
 
-    $query = "DELETE FROM customers WHERE id='$customerId'";
+    $query = "DELETE FROM crm WHERE id='$customerId'";
     mysqli_query($connection, $query);
 }
 
@@ -92,7 +92,7 @@ function getEmailAddresses() {
 
     $emailAddresses = [];
 
-    $query = "SELECT email FROM customers";
+    $query = "SELECT email FROM crm";
     $result = mysqli_query($connection, $query);
 
     if ($result) {
